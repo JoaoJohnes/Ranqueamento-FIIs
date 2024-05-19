@@ -31,30 +31,31 @@ def filter_df(df):
 
 
 def clean_df(df):
-    df_aux = df.drop(df[df["Preço Atual (R$)"] == 0].index)
+    df_aux = df.copy()
+
+    drop_cols = [
+        "Tax. Gestão",
+        "Tax. Performance",
+        "Tax. Administração",
+        "DY Patrimonial",
+        "Variação Patrimonial",
+        "Rentab. Patr. Período",
+        "Rentab. Patr. Acumulada",
+        "DY Ano",
+        "DY (12M) Acumulado",
+        "DY (6M) Acumulado",
+        "DY (3M) Acumulado",
+        "P/VPA",
+        "VPA",
+        "Patrimônio Líquido",
+        "Rentab. Período",
+        "Rentab. Acumulada",
+    ]
+
+    df_aux = df_aux.drop(df_aux[df_aux["Preço Atual (R$)"] == 0].index)
     df_aux = df_aux.drop(df_aux[df_aux["Num. Cotistas"] == 0].index)
     df_aux = df_aux.drop(df_aux[df_aux["Dividend Yield"] == 0].index)
-    df_aux = df_aux.drop(
-        [
-            "Tax. Gestão",
-            "Tax. Performance",
-            "Tax. Administração",
-            "DY Patrimonial",
-            "Variação Patrimonial",
-            "Rentab. Patr. Período",
-            "Rentab. Patr. Acumulada",
-            "DY Ano",
-            "DY (12M) Acumulado",
-            "DY (6M) Acumulado",
-            "DY (3M) Acumulado",
-            "P/VPA",
-            "VPA",
-            "Patrimônio Líquido",
-            "Rentab. Período",
-            "Rentab. Acumulada",
-        ],
-        axis=1,
-    )
+    df_aux = df_aux.drop(drop_cols, axis=1)
 
     return df_aux
 
@@ -84,7 +85,7 @@ def clear_rank_columns(df):
             "Num. Cotistas_rank",
             "P/VP_rank",
             "Volatilidade_rank",
-            "Weighted rank"
+            "Weighted_average",
         ],
         axis=1,
     )
@@ -148,8 +149,8 @@ def weighted_average(df):
 
     cols = [col for col in df_aux.columns if "_rank" in col]
 
-    df_aux["Weighted rank"] = df_aux[cols].mean(axis=1) / weights_sum
-    df_aux["Rank"] = df_aux["Weighted rank"].rank(method="dense", ascending=True)
+    df_aux["Weighted_average"] = df_aux[cols].mean(axis=1) / weights_sum
+    df_aux["Rank"] = df_aux["Weighted_average"].rank(method="dense", ascending=True)
     first_column = df_aux.pop("Rank")
     df_aux.insert(0, "Rank", first_column)
 
@@ -160,9 +161,9 @@ def print_means(df):
     print("Mediana p/vp: ")
     print(df["P/VP"].mean())
 
-    prc_lst_one = df.loc[(df["P/VP"] < 0.99)]["P/VP"].mean()
+    pvp_lesser_one = df.loc[(df["P/VP"] < 0.99)]["P/VP"].mean()
     print("Mediana p/vp menor que 1: ")
-    print(prc_lst_one)
+    print(pvp_lesser_one)
 
     print("Mediana liquidez: ")
     print(df["Liquidez Diária (R$)"].mean())
@@ -175,4 +176,4 @@ def print_means(df):
     print(prc_var_neg)
     print("Mediana variação preço positivo: ")
     print(prc_var_pos)
-    return 
+    return

@@ -62,7 +62,6 @@ col_floats = list(df.iloc[:, 2:].columns)
 df[col_floats] = df[col_floats].map(
     lambda x: str(x)
     .replace("R$", "")
-    #    .replace(".0", "")
     .replace(".", "")
     .replace("%", "")
     .replace(",", ".")
@@ -96,14 +95,14 @@ ranked_df = rank_columns(filtered_df)
 # media ponderada sobre as colunas ranqueadas
 print("aplicando media ponderada")
 weighted_df = weighted_average(ranked_df)
-weighted_df.sort_values(["Weighted rank"], inplace=True)
+weighted_df.sort_values(["Rank"], inplace=True)
 
 final_df = clear_rank_columns(weighted_df)
 # df_count = groupby_count(final_df)
 
 print("exportando para excell")
 with pd.ExcelWriter("output.xlsx") as writer:
-    final_df.to_excel(writer, sheet_name="weighted_rank")
+    final_df.to_excel(writer, sheet_name="ranking")
     # weighted_df.to_excel(writer, sheet_name="weights")
     # df_count.to_excel(writer, sheet_name="setor_count")
     # df_group_mean.to_excel(writer, sheet_name="setor_means")
