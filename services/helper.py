@@ -157,7 +157,7 @@ def weighted_average(df):
 
     cols = [col for col in df_aux.columns if "_rank" in col]
 
-    df_aux["Weighted_average"] = df_aux[cols].mean(axis=1) / weights_sum
+    df_aux["Weighted_average"] = df_aux[cols].sum(axis=1) / weights_sum
     df_aux["Rank"] = df_aux["Weighted_average"].rank(method="dense", ascending=True)
     first_column = df_aux.pop("Rank")
     df_aux.insert(0, "Rank", first_column)
