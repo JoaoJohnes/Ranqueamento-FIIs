@@ -44,15 +44,14 @@ for tr in table.find_all("tr"):
 
 data.pop(0)
 # Populando dataframe com dados selecionados
-df = pd.DataFrame(data, columns=column_names)
+initial_df = pd.DataFrame(data, columns=column_names)
 
-unclean_df = df.copy(deep=True)
+# Limpeza de valores faltantes por garantia
+df = initial_df.dropna(axis=0)
 
 ## Tipando dados categóricos
 print("tipando dados categóricos")
 categorical_columns = ["Fundos", "Setor"]
-idx_cat = df[df["Setor"].isna()].index
-df.drop(idx_cat, inplace=True)
 df[categorical_columns] = df[categorical_columns].astype("category")
 
 ## Tipando e adaptando dados flutuantes
@@ -72,8 +71,6 @@ df[col_floats] = df[col_floats].astype("float")
 ## Tipando e adaptando dados inteiros
 print("tipando e adaptando dados inteiros")
 integer_columns = ["Quant. Ativos", "Num. Cotistas"]
-idx_int = df[df["Quant. Ativos"].isna()].index
-df.drop(idx_int, inplace=True)
 df[integer_columns] = df[integer_columns].astype("int64")
 
 # limpando dados sem valor do df
@@ -97,6 +94,7 @@ print("aplicando media ponderada")
 weighted_df = weighted_average(ranked_df)
 weighted_df.sort_values(["Rank"], inplace=True)
 
+# limpeza de colunas de ranqueamento
 final_df = clear_rank_columns(weighted_df)
 # df_count = groupby_count(final_df)
 

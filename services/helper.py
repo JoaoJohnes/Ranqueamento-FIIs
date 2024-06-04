@@ -2,7 +2,8 @@
 Helper file
 """
 
-
+# Recebe: dataframe
+# Retorna: dataframe sem dados que não passem pelos filtros
 def filter_df(df):
     df_pvp = df[["P/VP"]].copy(deep=True)
     df_cot = df[["Num. Cotistas"]].copy(deep=True)
@@ -29,7 +30,8 @@ def filter_df(df):
 
     return df[filter_]
 
-
+# Recebe: dataframe
+# Retorna: dataframe sem colunas especificadas, e sem dados importantes zerados
 def clean_df(df):
     df_aux = df.copy()
 
@@ -59,7 +61,8 @@ def clean_df(df):
 
     return df_aux
 
-
+# Recebe: dataframe
+# Retorna: dataframe com colunas de ranqueamentos de indicadores
 def rank_columns(df):
     df_aux = df.copy()
 
@@ -73,7 +76,8 @@ def rank_columns(df):
 
     return df_aux
 
-
+# Recebe: dataframe
+# Retorna: dataframe sem colunas especificados
 def clear_rank_columns(df):
     df_aux = df.copy()
     df_aux = df_aux.drop(
@@ -91,13 +95,15 @@ def clear_rank_columns(df):
     )
     return df_aux
 
-
+# Recebe: dataframe
+# Retorna: dataframe com contagem de linhas de setores iguais
 def groupby_count(df):
     df_aux = df.groupby(["Setor"], observed=False)["Setor"].count()
 
     return df_aux
 
-
+# Recebe: dataframe
+# Retorna: dataframe com mediana de indicadores, agrupado por setor
 def groupby_mean(df):
     df_aux = df.groupby(["Setor"], observed=False, as_index=False)[
         [
@@ -114,18 +120,22 @@ def groupby_mean(df):
 
     return df_aux
 
-
+# Recebe: dataframe
+# Retorna: dataframe com colunas de média ponderada, e ranqueamento final.
 def weighted_average(df):
     df_aux = df.copy()
 
-    dy_12m_weight = 1.25
-    dy_6m_weight = 1
-    dy_3m_weight = 0.75
-    liquidez_weight = 0.75
-    cotistas_weight = 0.75
-    pvp_weight = 1.25
-    volatilidade_weight = 1
-    # price_weight = 0.5
+    low_weight = 0.75
+    medium_weight = 1
+    high_weight = 1.25
+
+    dy_12m_weight = high_weight
+    dy_6m_weight = medium_weight
+    dy_3m_weight = low_weight
+    liquidez_weight = low_weight
+    cotistas_weight = low_weight
+    pvp_weight = high_weight
+    volatilidade_weight = medium_weight
 
     weights_sum = (
         dy_12m_weight
@@ -135,7 +145,6 @@ def weighted_average(df):
         + cotistas_weight
         + pvp_weight
         + volatilidade_weight
-        # + price_weight
     )
 
     df_aux["DY (12M) média_rank"] = df_aux["DY (12M) média_rank"] * dy_12m_weight
@@ -145,7 +154,6 @@ def weighted_average(df):
     df_aux["Num. Cotistas_rank"] = df_aux["Num. Cotistas_rank"] * cotistas_weight
     df_aux["P/VP_rank"] = df_aux["P/VP_rank"] * pvp_weight
     df_aux["Volatilidade_rank"] = df_aux["Volatilidade_rank"] * volatilidade_weight
-    # df_aux["Preço Atual (R$)_rank"] = df_aux["Preço Atual (R$)_rank"] * price_weight
 
     cols = [col for col in df_aux.columns if "_rank" in col]
 
@@ -156,7 +164,9 @@ def weighted_average(df):
 
     return df_aux
 
-
+# Recebe: dataframe
+# Retorna: vazio
+# printa valores de mediana de certos indicadores
 def print_means(df):
     print("Mediana p/vp: ")
     print(df["P/VP"].mean())

@@ -3,7 +3,7 @@
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['C:\\Users\\joaoj\\OneDrive\\Área de Trabalho\\Ranqueamento-FIIs'],
     binaries=[],
     datas=[],
     hiddenimports=[],
