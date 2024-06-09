@@ -2,6 +2,7 @@
 Helper file
 """
 
+
 # Recebe: dataframe
 # Retorna: dataframe sem dados que não passem pelos filtros
 def filter_df(df):
@@ -29,6 +30,7 @@ def filter_df(df):
     )
 
     return df[filter_]
+
 
 # Recebe: dataframe
 # Retorna: dataframe sem colunas especificadas, e sem dados importantes zerados
@@ -61,6 +63,7 @@ def clean_df(df):
 
     return df_aux
 
+
 # Recebe: dataframe
 # Retorna: dataframe com colunas de ranqueamentos de indicadores
 def rank_columns(df):
@@ -75,6 +78,7 @@ def rank_columns(df):
     df_aux["Volatilidade_rank"] = df_aux["Volatilidade"].rank(ascending=True)
 
     return df_aux
+
 
 # Recebe: dataframe
 # Retorna: dataframe sem colunas especificados
@@ -95,12 +99,14 @@ def clear_rank_columns(df):
     )
     return df_aux
 
+
 # Recebe: dataframe
 # Retorna: dataframe com contagem de linhas de setores iguais
 def groupby_count(df):
     df_aux = df.groupby(["Setor"], observed=False)["Setor"].count()
 
     return df_aux
+
 
 # Recebe: dataframe
 # Retorna: dataframe com mediana de indicadores, agrupado por setor
@@ -119,6 +125,7 @@ def groupby_mean(df):
     ].mean()
 
     return df_aux
+
 
 # Recebe: dataframe
 # Retorna: dataframe com colunas de média ponderada, e ranqueamento final.
@@ -163,6 +170,7 @@ def weighted_average(df):
     df_aux.insert(0, "Rank", first_column)
 
     return df_aux
+
 
 # Recebe: dataframe
 # Retorna: vazio

@@ -4,82 +4,102 @@ Main file
 
 from bs4 import BeautifulSoup as bs
 import pandas as pd
-
-# import numpy as np
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from webdriver_manager.firefox import GeckoDriverManager
-from services.helper import filter_df, clean_df, rank_columns, groupby_count, groupby_mean, weighted_average, clear_rank_columns, print_means
-# import openpyxl as op
+from services.helper import (
+    filter_df,
+    clean_df,
+    rank_columns,
+    weighted_average,
+    clear_rank_columns,
+)
+from services.database import (
+    get_last_extraction,
+    load_history,
+    get_last_data,
+)
+from datetime import datetime
+import sqlalchemy
+
+engine = sqlalchemy.create_engine("mariadb+mariadbconnector://root:Zxc!123456@127.0.0.1:3306/fiis")
 
 print("--- iniciando ---")
 
-# Abrindo webdriver firefox
-print("Abrindo webdriver e carregando dados do site")
-driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()))
-driver.get("https://www.fundsexplorer.com.br/ranking")
+current_date = datetime.today().strftime("%Y-%m-%d")
+current_month = datetime.today().strftime("%m")
+current_year = datetime.today().strftime("%Y")
+url = "https://www.fundsexplorer.com.br/ranking"
 
-# Carregando dados da web
-soup = bs(driver.page_source, "lxml")
+last_extraction = get_last_extraction(engine)
 
-# Fechando webdriver firefox
-driver.close()
+if last_extraction is None:
+    last_extraction = [0, 0, 0]
 
-# Selecionando dados do xml para colocalos no dataframe
-print("carregando dados em dataframe")
-table = soup.find("table", class_="default-fiis-table__container__table")
+if (last_extraction[0] < int(current_month)) | (last_extraction[1] < int(current_year)):
+    # Abrindo webdriver firefox
+    print("Abrindo webdriver e carregando dados do site")
+    driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()))
+    driver.get(url)
 
-data = []
-row = []
-column_names = [th.text for th in table.find_all("th")]
+    # Carregando dados da web
+    soup = bs(driver.page_source, "lxml")
 
-for tr in table.find_all("tr"):
-    for td in tr.find_all("td"):
-        if td.text == "N/A":
-            row.append("0")
-        else:
-            row.append(td.text)
-    data.append(row[:])
-    row.clear()
+    # Fechando webdriver firefox
+    driver.close()
 
-data.pop(0)
-# Populando dataframe com dados selecionados
-initial_df = pd.DataFrame(data, columns=column_names)
+    # Selecionando dados do xml para coloca-los no dataframe
+    print("carregando dados em dataframe")
+    table = soup.find("table", class_="default-fiis-table__container__table")
 
-# Limpeza de valores faltantes por garantia
-df = initial_df.dropna(axis=0)
+    data = []
+    row = []
+    column_names = [th.text for th in table.find_all("th")]
 
-## Tipando dados categóricos
-print("tipando dados categóricos")
-categorical_columns = ["Fundos", "Setor"]
-df[categorical_columns] = df[categorical_columns].astype("category")
+    for tr in table.find_all("tr"):
+        for td in tr.find_all("td"):
+            if td.text == "N/A":
+                row.append("0")
+            else:
+                row.append(td.text)
+        data.append(row[:])
+        row.clear()
 
-## Tipando e adaptando dados flutuantes
-print("tipando e adaptando dados flutuantes")
-col_floats = list(df.iloc[:, 2:].columns)
+    data.pop(0)
+    # Populando dataframe com dados selecionados
+    initial_df = pd.DataFrame(data, columns=column_names)
 
-df[col_floats] = df[col_floats].map(
-    lambda x: str(x)
-    .replace("R$", "")
-    .replace(".", "")
-    .replace("%", "")
-    .replace(",", ".")
-)
+    # Limpeza de valores faltantes por garantia
+    df = initial_df.dropna(axis=0)
 
-df[col_floats] = df[col_floats].astype("float")
+    ## Tipando dados categóricos
+    print("tipando dados categóricos")
+    categorical_columns = ["Fundos", "Setor"]
+    df[categorical_columns] = df[categorical_columns].astype("category")
 
-## Tipando e adaptando dados inteiros
-print("tipando e adaptando dados inteiros")
-integer_columns = ["Quant. Ativos", "Num. Cotistas"]
-df[integer_columns] = df[integer_columns].astype("int64")
+    ## Tipando e adaptando dados flutuantes
+    print("tipando e adaptando dados flutuantes")
+    col_floats = list(df.iloc[:, 2:].columns)
 
-# limpando dados sem valor do df
-print("limpando dados sem valor")
-cleaned_df = clean_df(df)
+    df[col_floats] = df[col_floats].map(
+        lambda x: str(x).replace("R$", "").replace(".", "").replace("%", "").replace(",", ".")
+    )
 
-# df_count = groupby_count(cleaned_df)
-# df_group_mean = groupby_mean(cleaned_df)
-# print_means(cleaned_df)
+    df[col_floats] = df[col_floats].astype("float")
+
+    ## Tipando e adaptando dados inteiros
+    print("tipando e adaptando dados inteiros")
+    integer_columns = ["Quant. Ativos", "Num. Cotistas"]
+    df[integer_columns] = df[integer_columns].astype("int64")
+
+    # limpando dados sem valor do df
+    print("limpando dados sem valor")
+    cleaned_df = clean_df(df)
+    load_history(df=cleaned_df, engine=engine, source=url, date=current_date)
+
+else:
+    print("carregando dados da base")
+    cleaned_df = get_last_data(engine=engine, extraction_id=last_extraction[2])
 
 # filtrando dados via parametros
 print("realizando filtragem de dados")
@@ -101,12 +121,5 @@ final_df = clear_rank_columns(weighted_df)
 print("exportando para excell")
 with pd.ExcelWriter("output.xlsx") as writer:
     final_df.to_excel(writer, sheet_name="ranking")
-    # weighted_df.to_excel(writer, sheet_name="weights")
-    # df_count.to_excel(writer, sheet_name="setor_count")
-    # df_group_mean.to_excel(writer, sheet_name="setor_means")
-    # unclean_df.to_excel(writer, sheet_name="unclean_df")
-    # cleaned_df.to_excel(writer, sheet_name="cleaned_df")
-    # filtered_df.to_excel(writer, sheet_name="filtered_df")
-    # ranked_df.to_excel(writer, sheet_name="ranked_df")
 
 print("--- finalizado! ---")
