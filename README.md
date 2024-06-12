@@ -6,6 +6,7 @@ O executavel main.exe está localizado dentro da pasta dist, após execução é
 Necessário ter o navegador firefox instalado para o webdriver executar corretamente.
 
 ------ Branch com base de dados --------------
+
 a branch database-version contém a versão com base de dados, ela não contém executavel
 para execução necessário: 
 - instalação MariaDB, e conector MariaDB-Python-C (https://mariadb.com/docs/server/connect/programming-languages/c/)
