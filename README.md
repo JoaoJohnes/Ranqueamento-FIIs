@@ -14,4 +14,4 @@ a branch database-version contém a versão com base de dados, ela não contém 
 - criar a base de dados, sql com criação da base tabelas e inserções, contino arquivo fiis.sql
 - ter python instalado, versão utilizada no desenvolvimento = 3.12
 - firefox instalado
-- para execução: Python3.12 ./main.py , alterar versão do python caso necessário.
+- para execução: Python3.12 ./main.py , alterar versão do python e path do arquivo caso necessário.
