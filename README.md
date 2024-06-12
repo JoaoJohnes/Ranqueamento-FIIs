@@ -10,7 +10,7 @@ Necessário ter o navegador firefox instalado para o webdriver executar corretam
 a branch database-version contém a versão com base de dados, ela não contém executavel
 para execução necessário: 
 - instalação MariaDB, e conector MariaDB-Python-C (https://mariadb.com/docs/server/connect/programming-languages/c/)
-- linha 25 main.py alterar a string de conexão da engine, colocando dados do MariaDB  / engine = sqlalchemy.create_engine("mariadb+mariadbconnector://**usuário**:**senha**@**servidor-ip**:**port**/fiis") /
+- linha 25 main.py alterar a string de conexão da engine, colocando dados do MariaDB  / engine = sqlalchemy.create_engine("mariadb+mariadbconnector://**usuário**:**senha**@**ip**:**port**/fiis") /
 - criar a base de dados, sql com criação da base tabelas e inserções, contino arquivo fiis.sql
 - ter python instalado, versão utilizada no desenvolvimento = 3.12
 - firefox instalado
